@@ -48,9 +48,9 @@ int pop(Element **racine, int profondeur) {
         printf(" ");
     /* affiche de la valeur du noeud actuel */
     printf("- %d\n", (*racine)->valeur);
+    profondeur++;
 
     if ((*racine)->gauche != NULL) { /* si il y a un noeud à gauche */
-        profondeur++;
         pop(&((*racine)->gauche), profondeur); /* récursivité avec le noeud suivant à gauche */
         profondeur--;
     }
@@ -61,7 +61,6 @@ int pop(Element **racine, int profondeur) {
     }
 
     if ((*racine)->droite != NULL){ /*si il y a un noeud à droite */
-        profondeur++;
         pop(&((*racine)->droite), profondeur); /* récursivité avec le noeud suivant à droite */
         profondeur--;
     }
