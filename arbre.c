@@ -2,21 +2,24 @@
 #include <stdlib.h>
 #include <time.h>
 
+/* définition de la structure d'un noeud */
 typedef struct structElement {
     int valeur;
     struct structElement *gauche;
     struct structElement *droite;
 } Element;
 
-Element *init() { /* Fonction pour initialiser un noeud */
+/* fonction pour initialiser un nouveau noeud */
+Element *init() {
     Element *racine;
-    racine = malloc(sizeof(Element));
+    racine = malloc(sizeof(Element)); /* allocation mémoire */
     racine->gauche = NULL;
     racine->droite = NULL;
 
     return(racine);
 }
 
+/* fonction pour entrer de nouvelles valeurs */
 void push(Element **racine, int nb) {
     if (nb <= (*racine)->valeur) { /* si la valeur est <= à la valeur du noeud actuel */
         if ((*racine)->gauche == NULL) { /* s'il n'existe pas de noeud à gauche */
@@ -27,7 +30,7 @@ void push(Element **racine, int nb) {
         else /* s'il existe un noeud */
             push(&((*racine)->gauche), nb); /* on passe à celui-ci */
     }
-    else {
+    else { /* même chose pour la droite */
         if ((*racine)->droite == NULL) {
             Element *nouveau = init();
             nouveau->valeur = nb;
@@ -38,6 +41,7 @@ void push(Element **racine, int nb) {
     }
 }
 
+/* fonction d'affichage */
 int pop(Element **racine, int profondeur) {
     /* gestion de la profondeur avec des espaces */
     for(int i=0;i<=profondeur;i++)
@@ -72,6 +76,7 @@ int pop(Element **racine, int profondeur) {
         En tout cas, en rajoutant ce return, il n'y a plus d'erreur. */
 }
 
+/* fonction pour libérer l'espace mémoires */
 void destruct(Element **racine) {
     if ((*racine)->gauche != NULL) /* si il y a un noeud à gauche */
         destruct(&((*racine)->gauche)); /* récursivité avec le noeud suivant à gauche */
@@ -81,30 +86,36 @@ void destruct(Element **racine) {
 }
 
 int main() {
+    /* initialisation du noeud racine de l'arbre */
     Element *racine = init();
 
     /* pour tester le programme : */
+    /* pour générer des nombres aléatoires */
     time_t t;
     srand((unsigned) time(&t));
-    int tab[15];
 
+    int tab[15]; /* création d'un tableau pour stocker ces valeurs */
+
+    /* génération des nombres */
     for(int i=0;i<15;i++)
         tab[i] = rand() % 100;
 
-    racine->valeur = tab[0];
+    racine->valeur = tab[0]; /* on stock la première valeur dans le noeud racine */
 
-    for(int i=1;i<15;i++)
+    for(int i=1;i<15;i++) /* génération des noeuds et affectation des valeurs */
         push(&racine, tab[i]);
 
+    /* affichage de toutes les valeurs utilisées dans l'arbre */
     printf("Insertion des valeurs : ");
     for(int i=0;i<15;i++)
         printf("%d ", tab[i]);
     printf("\n");
 
-    /* Affichage */
+    /* Affichage de l'arbre */
     pop(&racine, 0);
 
     /* Libération de l'espace mémoire utilisé */
     destruct(&racine);
+
     return (0);
 }
