@@ -47,11 +47,13 @@ void init_list(List **first_elem) {
 }
 
 /* fonction pour libérer l'espace mémoires */
-void destruct(Element **racine) {
-    if ((*racine)->gauche != NULL) /* si il y a un noeud à gauche */
-        destruct(&((*racine)->gauche)); /* récursivité avec le noeud suivant à gauche */
-    if ((*racine)->droite != NULL) /* si il y a un noeud à droite */
-        destruct(&((*racine)->droite)); /* récursivité avec le noeud suivant à droite */
+void destruct(Element *racine) {
+    if (racine == NULL)
+        return;
+    //if ((*racine)->gauche != NULL) /* si il y a un noeud à gauche */
+    destruct(racine->gauche); /* récursivité avec le noeud suivant à gauche */
+    //if ((*racine)->droite != NULL) /* si il y a un noeud à droite */
+    destruct(racine->droite); /* récursivité avec le noeud suivant à droite */
     free(racine);
 }
 
@@ -87,12 +89,13 @@ int pop(List **pile) {
     return valeur;
 }
 
-void tree_to_list(Element **racine, List **pile) {
-    push(pile, (*racine)->valeur); /* on stock la valeur dans la liste chainee */
+void tree_to_list(Element **racine, List **pile, int value) {
     if ((*racine)->gauche != NULL) /* si il y a un noeud à gauche */
-        tree_to_list(&((*racine)->gauche), pile); /* récursivité avec le noeud suivant à gauche */
+        tree_to_list(&((*racine)->gauche), pile, -1); /* récursivité avec le noeud suivant à gauche */
     if ((*racine)->droite != NULL) /* si il y a un noeud à droite */
-        tree_to_list(&((*racine)->droite), pile); /* récursivité avec le noeud suivant à droite */
+        tree_to_list(&((*racine)->droite), pile, -1); /* récursivité avec le noeud suivant à droite */
+    if (value != (*racine)->valeur)
+        push(pile, (*racine)->valeur); /* on stock la valeur dans la liste chainee */
 }
 
 /* fonction pour entrer de nouvelles valeurs dans l'arbre */
@@ -120,13 +123,12 @@ void add_node(Element **racine, int nb) {
 /* fonction pour supprimer un noeud de l'arbre */
 void suppr_node(Element **racine, Element **node, List **pile, Element **last_node, int value) {
     if ((*node)->valeur == value) {
-        printf("Valeur trouvee. En cours de suppression...\n");
-        tree_to_list(node, pile); /* stock la liste de toute les valeurs à partir du noeud qu'on veut suppr */
+        tree_to_list(node, pile, value); /* stock la liste de toute les valeurs à partir du noeud qu'on veut suppr */
         if ((*last_node)->gauche == *node) /* si le noeud à supprimer est sur la branche de gauche du noeud au dessus, on le retire */
             (*last_node)->gauche = NULL;
         else /* sinon il est à droite */
             (*last_node)->droite = NULL;
-        destruct(node); /* libère la mémoire occupée par le noeud et tout ce qu'il y a en dessous */
+        destruct(*node); /* libère la mémoire occupée par le noeud et tout ce qu'il y a en dessous */
         
         /* rajout des valeurs qui était en dessous dans l'arbre */ 
         int to_add;
@@ -146,7 +148,7 @@ void suppr_node(Element **racine, Element **node, List **pile, Element **last_no
 }
 
 /* fonction d'affichage de l'arbre */
-int print_tree(Element **racine, int profondeur) {
+void print_tree(Element **racine, int profondeur) {
     /* gestion de la profondeur avec des espaces */
     for(int i=0;i<=profondeur;i++)
         printf(" ");
@@ -173,10 +175,6 @@ int print_tree(Element **racine, int profondeur) {
             printf(" ");
         printf("-\n"); /* pour les "fils" vide */
     }
-    /* return (0); si on compile avec les tags -Wall -Werror -Wextra, gcc retourne une erreur :
-        error: control reaches end of non-void function [-Werror=return-type]
-        je ne comprends pas parce qu'une fonction void est censé ne rien renvoyé non ?
-        En tout cas, en rajoutant ce return, il n'y a plus d'erreur. */
 }
 
 /* fonction pour sélectionner la valeur du noeud à supprimer dans l'arbre */
@@ -195,7 +193,7 @@ int wanna_suppr(void) {
         printf("Fin du programme.\n");
     else {
         printf("Reponse incorrect.\n");
-        wanna_suppr();
+        return (wanna_suppr());
     }
     return (-1);
 }
@@ -212,20 +210,20 @@ int main(void) {
     time_t t;
     srand((unsigned) time(&t));
 
-    int tab[15]; /* création d'un tableau pour stocker ces valeurs */
+    int tab[10]; /* création d'un tableau pour stocker ces valeurs */
 
     /* génération des nombres */
-    for(int i=0;i<15;i++)
+    for(int i=0;i<10;i++)
         tab[i] = rand() % 100;
 
     racine->valeur = tab[0]; /* on stock la première valeur dans le noeud racine */
 
-    for(int i=1;i<15;i++) /* génération des noeuds et affectation des valeurs */
+    for(int i=1;i<10;i++) /* génération des noeuds et affectation des valeurs */
         add_node(&racine, tab[i]);
 
     /* affichage de toutes les valeurs utilisées dans l'arbre */
     printf("Insertion des valeurs : ");
-    for(int i=0;i<15;i++)
+    for(int i=0;i<10;i++)
         printf("%d ", tab[i]);
     printf("\n");
 
@@ -243,7 +241,7 @@ int main(void) {
     }
 
     /* Libération de l'espace mémoire utilisé */
-    destruct(&racine);
+    destruct(racine);
     destruct_pile(pile);
 
     return (0);
